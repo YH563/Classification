@@ -2,7 +2,6 @@ from PIL import Image
 import os
 import random
 import cv2
-import numpy as np
 
 
 def process_file(file_folder, ratio=0.8):
@@ -45,21 +44,25 @@ def process_file(file_folder, ratio=0.8):
         image.save(os.path.join(test_folder, image_name))
 
 
-# 旋转图像
-def rotate_image(image):
+# 对图像进行随机翻转和随机旋转
+def random_process(image):
     (h, w) = image.shape[:2]
     center = (w // 2, h // 2)
-    angle = random.randint(0, 360)
-    M = cv2.getRotationMatrix2D(center, angle, 1.0)
-    rotated = cv2.warpAffine(image, M, (w, h))
-    return rotated
-
-
-# 对图像进行镜像翻转
-def flip_image(image):
     flip_choices = [0, 1, -1, None]  # 0: 水平翻转, 1: 垂直翻转, -1: 同时水平和垂直翻转, None: 不翻转
     flip_code = random.choice(flip_choices)
-    return cv2.flip(image, flip_code)
+    angles = []
+    images_list = [cv2.flip(image, flip_code)]
+    for i in range(6):
+        angle = random.randint(0, 360)
+        if i != 0 and angle in angles:
+            continue
+        angles.append(angle)
+    for angle in angles:
+        M = cv2.getRotationMatrix2D(center, angle, 1.0)
+        rotated = cv2.warpAffine(image, M, (w, h))
+        images_list.append(rotated)
+
+    return images_list
 
 
 # 进行数据增强
@@ -67,11 +70,9 @@ def data_augmentation(folder_path:str):
     for file in os.listdir(folder_path):
         file_path = os.path.join(folder_path, file)
         image_original = cv2.imread(file_path)
-        image_rotated = rotate_image(image_original)
-        image_flipped = flip_image(image_original)
-        new_image_list = [image_original, image_rotated, image_flipped]
-        new_path_list = ["train_cloned//" + file[:-4] + f"_{i}.bmp" for i in range(3)]
-        for image, path in zip(new_image_list, new_path_list):
+        new_images_list = random_process(image_original)
+        new_path_list = ["train_cloned//" + file[:-4] + f"_{i}.bmp" for i in range(len(new_images_list))]
+        for image, path in zip(new_images_list, new_path_list):
             cv2.imwrite(path, image)
 
 
