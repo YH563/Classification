@@ -71,6 +71,7 @@ def data_augmentation(folder_path:str):
         file_path = os.path.join(folder_path, file)
         image_original = cv2.imread(file_path)
         new_images_list = random_process(image_original)
+        new_images_list.insert(0, image_original)
         new_path_list = ["train_cloned//" + file[:-4] + f"_{i}.bmp" for i in range(len(new_images_list))]
         for image, path in zip(new_images_list, new_path_list):
             cv2.imwrite(path, image)
@@ -79,4 +80,3 @@ def data_augmentation(folder_path:str):
 if __name__ == "__main__":
     train_folder_path = "train"
     data_augmentation(train_folder_path)
-

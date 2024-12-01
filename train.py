@@ -11,7 +11,7 @@ import time
 
 if __name__ == "__main__":
     # 初始参数
-    file_folder = "train"
+    file_folder = "train_cloned"
     batch_size = 20
     num_epochs = 40
     lr = 0.0001
